@@ -1,0 +1,1 @@
+Scaffold-DbContext "Server=localhost\SQLEXPRESS;Database=FinalProject;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -ContextDir Contexts -Context OnlineShoeStoreContext -Tables Category,Manufacturer,Order,OrderItems,Product,Role,Supplier,User -Force
