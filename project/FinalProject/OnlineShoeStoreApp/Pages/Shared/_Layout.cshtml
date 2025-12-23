@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using OnlineShoeStoreLibrary.Models
+@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
@@ -23,9 +25,37 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Products/Index">Каталог обуви</a>
+                            <a class="nav-link text-dark" asp-page="/Products/Index">Каталог обуви</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/Orders/Index">Заказы</a>
+                            </li>
+                        }
                     </ul>
+                    <div class="navbar-nav ms-auto">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/Orders/Index">Заказы</a>
+                            </li>
+                        }
+                        </ul>
+                        <div class="navbar-nav ms-auto">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? "";
+                                var lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? "";
+
+                                <span class="nav-link">Привет, @firstName @lastName</span>
+                                <a asp-page="/Login" asp-page-handler="Logout" class="nav-link">Выйти</a>
+                            }
+                            else
+                            {
+                                <a asp-page="/Login" class="nav-link">Войти</a>
+                            }
+                    </div>
                 </div>
             </div>
         </nav>

@@ -101,5 +101,52 @@ namespace OnlineShoeStoreApp.Pages.Products
             // Оповещение об отсутствии результатов
             NoResults = !Product.Any();
         }
+
+        public async Task<IActionResult> OnPostOrderAsync(int productId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToPage("/Account/Login");
+            }
+
+            // Находим товар
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null || product.Quantity <= 0)
+            {
+                TempData["Error"] = "Товар недоступен для заказа";
+                return RedirectToPage();
+            }
+
+            // Находим пользователя (по логину)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == User.Identity.Name);
+            if (user == null) return Unauthorized();
+
+            // Создаём заказ
+            var order = new Order
+            {
+                UserId = user.UserId,
+                OrderDate = DateTime.Now.Date,
+                DeliveryDate = DateTime.Now.AddDays(7),
+                ReceiveCode = new Random().Next(100, 1000),
+                IsFinished = false
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // Состав заказа (OrderItems)
+            var orderItem = new OrderItem
+            {
+                OrderId = order.OrderId,
+                ProductId = productId,
+                Quantity = 1 // можно сделать выбор количества позже
+            };
+
+            _context.OrderItems.Add(orderItem);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Заказ успешно создан!";
+            return RedirectToPage();
+        }
     }
 }

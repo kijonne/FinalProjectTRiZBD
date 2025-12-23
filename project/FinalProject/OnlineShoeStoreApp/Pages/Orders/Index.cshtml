@@ -1,0 +1,53 @@
+﻿@page
+@model OnlineShoeStoreApp.Pages.Orders.IndexModel
+
+@{
+    ViewData["Title"] = "Мои заказы";
+}
+
+<div class="container my-5">
+    <h1 class="text-center mb-5" style="font-family: 'Times New Roman'; font-size: 3rem;">
+        @if (User.IsInRole("admin") || User.IsInRole("manager"))
+        {
+            <text>Все заказы</text>
+        }
+        else
+        {
+            <text>Мои заказы</text>
+        }
+    </h1>
+
+    @if (!Model.Order.Any())
+    {
+        <p class="text-center fs-3">Заказов нет.</p>
+    }
+    else
+    {
+        <table class="table table-bordered" style="font-family: 'Times New Roman'; font-size: 1.3rem;">
+            <thead class="table-success">
+                <tr>
+                    <th>Номер заказа</th>
+                    <th>Дата заказа</th>
+                    <th>Состав</th>
+                    <th>Итоговая стоимость</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Order)
+                {
+                    var total = order.OrderItems.Sum(oi => oi.Product.Price * oi.Quantity * (1 - oi.Product.Discount / 100m));
+                    <tr>
+                        <td>@order.OrderId</td>
+                        <td>@order.OrderDate.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @string.Join("<br>", order.OrderItems.Select(oi => $"{oi.Product.Article} ({oi.Quantity} шт.)"))
+                        </td>
+                        <td>@Math.Round(total) руб.</td>
+                        <td>@(order.IsFinished ? "Доставлен" : "Новый")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

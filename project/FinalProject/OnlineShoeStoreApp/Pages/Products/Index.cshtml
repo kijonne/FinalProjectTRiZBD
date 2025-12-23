@@ -80,6 +80,23 @@
                 var discountedPrice = Math.Round(item.Price * (1 - item.Discount / 100m));
                 var isBigDiscount = item.Discount > 15;
 
+                <div class="text-center mt-5">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form asp-page-handler="Order" method="post">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <button type="submit" class="btn accent-btn btn-lg px-5" style="font-size: 1.5rem;">
+                                Заказать
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-page="/Account/Login" asp-route-returnUrl="@HttpContext.Request.Path" class="btn accent-btn btn-lg px-5" style="font-size: 1.5rem;">
+                            Заказать
+                        </a>
+                    }
+                </div>
                 <div class="col-12">
                     <div class="product-card @(isBigDiscount ? "big-discount" : "")">
                         <div class="row g-0 align-items-start">
