@@ -1,0 +1,135 @@
+﻿@page
+@model OnlineShoeStoreApp.Pages.Products.IndexModel
+
+@{
+    ViewData["Title"] = "Каталог обуви";
+}
+
+<div class="container my-5">
+    <h1 class="text-center mb-5" style="font-family: 'Times New Roman'; font-size: 3rem; font-weight: bold;">
+        Каталог обуви
+    </h1>
+
+    <div class="card mb-5 p-4" style="border: 4px solid #7FFF00; border-radius: 15px;">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Поиск по описанию</label>
+                    <input type="text" name="SearchDescription" value="@Model.SearchDescription" class="form-control" placeholder="часть текста..." />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Производитель</label>
+                    <select name="ManufacturerId" class="form-select">
+                        <option value="">Все производители</option>
+                        @foreach (var m in Model.Manufacturers)
+                        {
+                            <option value="@m.ManufacturerId" selected="@(m.ManufacturerId == Model.ManufacturerId)">@m.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Цена не более</label>
+                    <input type="number" name="MaxPrice" value="@Model.MaxPrice" class="form-control" placeholder="руб." step="0.01" />
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-check">
+                        <input type="checkbox" name="OnlyDiscount" class="form-check-input" id="onlyDiscount" @(Model.OnlyDiscount ? "checked" : "") />
+                        <label class="form-check-label" for="onlyDiscount">Только со скидкой</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="OnlyInStock" class="form-check-input" id="onlyInStock" @(Model.OnlyInStock ? "checked" : "") />
+                        <label class="form-check-label" for="onlyInStock">Только в наличии</label>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Сортировка</label>
+                    <select name="SortOrder" class="form-select">
+                        <option value="article_asc" selected="@(Model.SortOrder == "article_asc")">По артикулу</option>
+                        <option value="supplier_asc" selected="@(Model.SortOrder == "supplier_asc")">По поставщику</option>
+                        <option value="price_asc" selected="@(Model.SortOrder == "price_asc")">По цене (возр.)</option>
+                        <option value="price_desc" selected="@(Model.SortOrder == "price_desc")">По цене (убыв.)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn accent-btn btn-lg px-5 me-3">Применить</button>
+                <a asp-page="./Index" class="btn btn-outline-secondary btn-lg px-5">Сбросить</a>
+            </div>
+        </form>
+    </div>    
+
+    <!-- Сообщение, если ничего не найдено -->
+    @if (Model.NoResults)
+    {
+        <div class="alert alert-warning text-center fs-3">
+            <strong>Товары по заданным фильтрам не найдены.</strong><br />
+            Измените параметры поиска или сбросьте фильтры.
+        </div>
+    }
+    else
+    {
+        <div class="row g-5">
+            @foreach (var item in Model.Product)
+            {
+                var hasDiscount = item.Discount > 0;
+                var discountedPrice = Math.Round(item.Price * (1 - item.Discount / 100m));
+                var isBigDiscount = item.Discount > 15;
+
+                <div class="col-12">
+                    <div class="product-card @(isBigDiscount ? "big-discount" : "")">
+                        <div class="row g-0 align-items-start">
+                            <!-- Фото слева -->
+                            <div class="col-md-4 p-4 text-center">
+                                <img src="@(string.IsNullOrEmpty(item.PhotoName)
+                                                                                 ? "/images/picture.png"
+                                                                                 : "/images/shoes/" + item.PhotoName)"
+                             class="img-fluid rounded"
+                             alt="@item.Article"
+                             style="max-height: 350px; object-fit: contain;" />
+                    </div>
+                    <div class="col-md-8 p-4 position-relative">
+                        @if (hasDiscount)
+                        {
+                            <div class="discount-badge">
+                                Действующая<br>скидка<br><strong>@item.Discount%</strong>
+                            </div>
+                        }
+
+                        <h2 class="mb-4" style="font-size: 2.4rem;">
+                            Категория товара: @(item.Category?.Name ?? "Не указана") | @item.Article
+                        </h2>
+
+                                <div style="font-size: 1.5rem; line-height: 2.6rem;">
+                                    <p><strong>Описание товара:</strong> @(string.IsNullOrEmpty(item.Description) ? "—" : item.Description)</p>
+                                    <p><strong>Производитель:</strong> @(item.Manufacturer?.Name ?? "Не указан")</p>
+                                    <p><strong>Поставщик:</strong> @(item.Supplier?.Name ?? "Не указан")</p>
+                                    <p><strong>Цена:</strong>
+                                    @if (hasDiscount)
+                                    {
+                                        <span style="text-decoration: line-through; opacity: 0.7; margin-right: 20px;">
+                                            @item.Price руб.
+                                        </span>
+                                        @discountedPrice
+                                    }
+                                    else
+                                    {
+                                        @item.Price
+                                    }
+                                    </p>
+                                    <p><strong>Единица измерения:</strong> @item.Unit</p>
+                                    <p><strong>Количество на складе:</strong> @item.Quantity шт.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

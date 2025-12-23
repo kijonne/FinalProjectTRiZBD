@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-//using OnlineShoeStoreLibrary.Contexts;
+using OnlineShoeStoreLibrary.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddDbContext<OnlineShoeStoreContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<OnlineShoeStoreContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -16,6 +16,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
+
+app.UseStaticFiles();
 
 app.UseRouting();
 

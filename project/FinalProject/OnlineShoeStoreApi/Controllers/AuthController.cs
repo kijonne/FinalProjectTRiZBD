@@ -40,16 +40,20 @@ namespace OnlineShoeStoreApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            // Найти пользователя по логину
             var user = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Login == loginDto.Login);
+        .Include(u => u.Role)
+        .FirstOrDefaultAsync(u => u.Login == loginDto.Login);
 
             if (user == null)
                 return Unauthorized(new { message = "Неверный логин или пароль" });
 
-            var hashedPassword = HashPassword(loginDto.Password);
-            if (user.PasswordHash != hashedPassword)
+            var result = _passwordHasher.VerifyHashedPassword(
+                null!,
+                user.PasswordHash,
+                loginDto.Password
+            );
+
+            if (result == PasswordVerificationResult.Failed)
                 return Unauthorized(new { message = "Неверный логин или пароль" });
 
             // Создать JWT токен
