@@ -19,24 +19,30 @@ namespace OnlineShoeStoreApp.Pages.Orders
             _context = context;
         }
 
-        public IList<Order> Order { get;set; } = default!;
+        public IList<Order> Orders { get; set; } = new List<Order>();
 
         public async Task OnGetAsync()
         {
-            if(!User.Identity.IsAuthenticated)
+            if (!User.Identity.IsAuthenticated)
             {
-                Order = new List<Order>();
+                Orders = new List<Order>();
                 return;
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == User.Identity.Name);
-            if (user == null) return;
+            var userLogin = User.Identity.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == userLogin);
 
-            var isAdminOrManager = User.IsInRole("admin") || User.IsInRole("manager");
+            if (user == null)
+            {
+                Orders = new List<Order>();
+                return;
+            }
+
+            var isAdminOrManager = User.IsInRole("Администратор") || User.IsInRole("Менеджер");
 
             if (isAdminOrManager)
             {
-                Order = await _context.Orders
+                Orders = await _context.Orders
                     .Include(o => o.User)
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Product)
@@ -45,7 +51,7 @@ namespace OnlineShoeStoreApp.Pages.Orders
             }
             else
             {
-                Order = await _context.Orders
+                Orders = await _context.Orders
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Product)
                     .Where(o => o.UserId == user.UserId)

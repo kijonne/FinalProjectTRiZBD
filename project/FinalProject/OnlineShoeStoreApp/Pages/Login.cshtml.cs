@@ -11,53 +11,70 @@ using OnlineShoeStoreLibrary.Models;
 using OnlineShoeShopLibrary.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using BCrypt.Net;
 
 namespace OnlineShoeStoreApp.Pages
 {
-    public class LoginModel(AuthService service) : PageModel
+    public class LoginModel : PageModel
     {
-        private AuthService _authService = service;
+        private readonly OnlineShoeStoreContext _context;
 
-        public IActionResult OnGet()
+        public LoginModel(OnlineShoeStoreContext context)
         {
-            return Page();
-        }
-
-        public IActionResult OnGetLogout()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToPage("/Index");
+            _context = context;
         }
 
         [BindProperty]
-        public User User { get; set; } = default!;
+        public User User { get; set; } = new User(); // инициализируем, чтобы не null
 
-        public async Task<IActionResult> OnPostLoginAsync()
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        public async Task<IActionResult> OnPostAsync()
         {
-            LoginDto login = new(User.Login, User.PasswordHash);
-
-            var user = await _authService.AuthUserAsync(login);
-            var role = await _authService.GetUserRoleAsync(User.Login);
-
-            if (user is null)
+            if (string.IsNullOrWhiteSpace(User.Login) || string.IsNullOrWhiteSpace(User.PasswordHash))
+            {
+                ErrorMessage = "Введите логин и пароль";
                 return Page();
+            }
 
-            HttpContext.Session.SetString("FirstName", user.FirstName);
-            HttpContext.Session.SetString("SecondName", user.LastName);
-            HttpContext.Session.SetString("Patronymic", user.Patronymic);
-            HttpContext.Session.SetString("UserId", user.UserId.ToString());
-            HttpContext.Session.SetString("Role", role.Name);
+            // Находим пользователя по логину
+            var dbUser = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Login == User.Login);
 
-            return RedirectToPage("/Shoes/Index");
+            if (dbUser == null || !BCrypt.Net.BCrypt.Verify(User.PasswordHash, dbUser.PasswordHash))
+            {
+                ErrorMessage = "Неверный логин или пароль";
+                return Page();
+            }
+
+            // Создаём claims
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, dbUser.Login),
+                new Claim(ClaimTypes.NameIdentifier, dbUser.UserId.ToString()),
+                new Claim(ClaimTypes.GivenName, dbUser.FirstName),
+                new Claim(ClaimTypes.Surname, dbUser.LastName),
+                new Claim(ClaimTypes.Role, dbUser.Role.Name)
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            return RedirectToPage("/Products/Index");
         }
 
-        public async Task<IActionResult> OnPostGuest()
+        public IActionResult OnPostGuest()
         {
-            HttpContext.Session.Clear();
+            return RedirectToPage("/Products/Index");
+        }
 
-            HttpContext.Session.SetString("Role", "guest");
-
-            return RedirectToPage("/Shoes/Index");
+        public async Task<IActionResult> OnGetLogoutAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToPage("/Index");
         }
     }
 }

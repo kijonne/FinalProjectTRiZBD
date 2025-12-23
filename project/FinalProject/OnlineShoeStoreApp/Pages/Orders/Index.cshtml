@@ -17,33 +17,42 @@
         }
     </h1>
 
-    @if (!Model.Order.Any())
+    @if (!Model.Orders.Any())
     {
         <p class="text-center fs-3">Заказов нет.</p>
     }
     else
     {
-        <table class="table table-bordered" style="font-family: 'Times New Roman'; font-size: 1.3rem;">
+        <table class="table table-bordered table-striped" style="font-family: 'Times New Roman'; font-size: 1.3rem;">
             <thead class="table-success">
                 <tr>
                     <th>Номер заказа</th>
                     <th>Дата заказа</th>
+                    <th>Дата доставки</th>
                     <th>Состав</th>
+                    <th>Код получения</th>
                     <th>Итоговая стоимость</th>
                     <th>Статус</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var order in Model.Order)
+                @foreach (var order in Model.Orders)
                 {
-                    var total = order.OrderItems.Sum(oi => oi.Product.Price * oi.Quantity * (1 - oi.Product.Discount / 100m));
+                    var total = order.OrderItems.Sum(oi => oi.Quantity * oi.Product.Price * (1 - oi.Product.Discount / 100m));
                     <tr>
                         <td>@order.OrderId</td>
                         <td>@order.OrderDate.ToString("dd.MM.yyyy")</td>
+                        <td>@order.DeliveryDate.ToString("dd.MM.yyyy")</td>
                         <td>
-                            @string.Join("<br>", order.OrderItems.Select(oi => $"{oi.Product.Article} ({oi.Quantity} шт.)"))
+                            <ul class="mb-0 ps-3">
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <li>@item.Product.Article (@item.Quantity шт.) — @Math.Round(item.Quantity * item.Product.Price * (1 - item.Product.Discount / 100m)) руб.</li>
+                                }
+                            </ul>
                         </td>
-                        <td>@Math.Round(total) руб.</td>
+                        <td><strong>@order.ReceiveCode</strong></td>
+                        <td><strong>@Math.Round(total) руб.</strong></td>
                         <td>@(order.IsFinished ? "Доставлен" : "Новый")</td>
                     </tr>
                 }

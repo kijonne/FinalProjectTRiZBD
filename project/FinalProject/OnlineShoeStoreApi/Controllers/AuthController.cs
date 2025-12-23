@@ -86,33 +86,5 @@ namespace OnlineShoeStoreApi.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
-        {
-            // Проверка что логин свободен
-            if (await _context.Users.AnyAsync(u => u.Login == dto.Login))
-                return BadRequest(new { message = "Логин уже занят" });
-
-            var user = new User
-            {
-                RoleId = dto.RoleId,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Patronymic = dto.Patronymic,
-                Login = dto.Login,
-                PasswordHash = _passwordHasher.HashPassword(null!, dto.Password)
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "Пользователь создан",
-                userId = user.UserId,
-                login = user.Login
-            });
-        }
     }
 }
