@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace OnlineShoeStoreLibrary.DTOs
 {
-    public class LoginDto
+    public class LoginDto(string login, string password)
     {
-        public string Login { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+        public string Login { get; set; } = login;
+        public string Password { get; set; } = password;
     }
 }

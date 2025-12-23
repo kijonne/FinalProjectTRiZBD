@@ -59,6 +59,6 @@ namespace OnlineShoeStoreApi.Controllers
     public class UpdateOrderStatusDto
     {
         public bool IsFinished { get; set; }
-        public DateOnly DeliveryDate { get; set; }
+        public DateTime DeliveryDate { get; set; }
     }
 }
