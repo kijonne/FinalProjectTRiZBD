@@ -39,6 +39,14 @@ public partial class Product
 
     [NotMapped]
     public decimal DiscountedPrice { get; set; }
+    [NotMapped]
+    public bool HasBigDiscount => Discount > 15;
+
+    [NotMapped]
+    public bool IsOutOfStock => Quantity == 0;
+
+    [NotMapped]
+    public bool HasDiscount => Discount > 0;
 
     public virtual Category Category { get; set; } = null!;
 

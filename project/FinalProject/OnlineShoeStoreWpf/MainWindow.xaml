@@ -5,17 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OnlineShoeStoreWpf"
         mc:Ignorable="d"
-        Title="Каталог обуви" Height="800" Width="1200"
+        Title="Каталог обуви" Height="800" Width="1500"
         FontFamily="Times New Roman" FontSize="14"
         Background="White">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Products}" Margin="40">
-            <ItemsControl.ItemsPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="AdminPanel" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,20,20,0"/>
+
+        <ListView x:Name="ProductsList" Grid.Row="1" ItemsSource="{Binding Products}" Margin="40" SelectionMode="Single">
+            <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border Width="1100" Height="400" Margin="30" 
                             BorderThickness="6" BorderBrush="#7FFF00" CornerRadius="20"
@@ -23,30 +30,20 @@
                         <!-- Фон по наличию и большой скидке -->
                         <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="BorderBrush" Value="#7FFF00"/>
+                                <Setter Property="BorderThickness" Value="6"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Quantity}" Value="0">
-                                        <Setter Property="Background" Value="LightBlue"/>
+                                    <DataTrigger Binding="{Binding IsOutOfStock}" Value="True">
+                                        <Setter Property="BorderBrush" Value="LightBlue"/>
+                                        <Setter Property="BorderThickness" Value="10"/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding Discount}" Value="16">
-                                        <Setter Property="Background" Value="#2E8B57"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Discount}" Value="17">
-                                        <Setter Property="Background" Value="#2E8B57"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Discount}" Value="18">
-                                        <Setter Property="Background" Value="#2E8B57"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Discount}" Value="19">
-                                        <Setter Property="Background" Value="#2E8B57"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Discount}" Value="20">
-                                        <Setter Property="Background" Value="#2E8B57"/>
+                                    <DataTrigger Binding="{Binding HasBigDiscount}" Value="True">
+                                        <Setter Property="BorderBrush" Value="#2E8B57"/>
+                                        <Setter Property="BorderThickness" Value="10"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="350"/>
@@ -78,22 +75,13 @@
                                     </TextBlock>
 
                                     <!-- Скидка справа вверху -->
-                                    <Border Grid.Column="1" Background="#00FA9A" CornerRadius="30" Padding="30,20" 
-                                            VerticalAlignment="Top" HorizontalAlignment="Right">
+                                    <Border Grid.Column="1" Background="#00FA9A" CornerRadius="30" Padding="30,20"
+                                        VerticalAlignment="Top" HorizontalAlignment="Right">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Discount}" Value="1">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Discount}" Value="2">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Discount}" Value="3">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Discount}" Value="20">
+                                                    <DataTrigger Binding="{Binding HasDiscount}" Value="True">
                                                         <Setter Property="Visibility" Value="Visible"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -101,7 +89,7 @@
                                         </Border.Style>
 
                                         <TextBlock Text="{Binding Discount, StringFormat='Действующая скидка {0}%'}" 
-                                                   Foreground="Black" FontWeight="Bold" FontSize="20" TextAlignment="Center"/>
+                                            Foreground="Black" FontWeight="Bold" FontSize="20" TextAlignment="Center"/>
                                     </Border>
                                 </Grid>
 
@@ -115,25 +103,13 @@
                                     <StackPanel Orientation="Horizontal" Margin="0,15">
                                         <!-- Старая цена — зачёркнутая красным -->
                                         <TextBlock Text="{Binding Price, StringFormat={}{0} руб.}" 
-                                                   FontSize="20"
-                                                   TextDecorations="Strikethrough" Foreground="Red">
+                                            FontSize="20"
+                                            TextDecorations="Strikethrough" Foreground="Red">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Discount}" Value="0">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Discount}" Value="1">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Discount}" Value="2">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Discount}" Value="3">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Discount}" Value="20">
+                                                        <DataTrigger Binding="{Binding HasDiscount}" Value="True">
                                                             <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -153,7 +129,7 @@
                         </Grid>
                     </Border>
                 </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 </Window>
