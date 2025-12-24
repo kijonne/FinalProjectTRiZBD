@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OnlineShoeStoreLibrary.Models;
 
@@ -32,6 +33,12 @@ public partial class Product
     public string? PhotoName { get; set; }
 
     public string Unit { get; set; } = null!;
+
+    [NotMapped]
+    public string PhotoPath { get; set; } = string.Empty;
+
+    [NotMapped]
+    public decimal DiscountedPrice { get; set; }
 
     public virtual Category Category { get; set; } = null!;
 

@@ -27,7 +27,7 @@ namespace OnlineShoeShopLibrary.Services
         /// <param name="passwordHash">хешиованный пароль из БД</param>
         /// <returns>Если пароль верный возвращает true, в противном случае false</returns>
         private bool VerifyPassword(string password, string passwordHash)
-            => BCrypt.Net.BCrypt.EnhancedVerify(password, passwordHash);
+            => BCrypt.Net.BCrypt.Verify(password, passwordHash);
 
         /// <summary>
         /// Метод аутентификации пользователя

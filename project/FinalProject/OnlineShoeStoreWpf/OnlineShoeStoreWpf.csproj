@@ -9,6 +9,68 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="images\Icon.ico" />
+    <None Remove="images\Icon.JPG" />
+    <None Remove="images\Icon.png" />
+    <None Remove="images\picture.png" />
+    <None Remove="images\shoes\1.jpg" />
+    <None Remove="images\shoes\10.jpg" />
+    <None Remove="images\shoes\2.jpg" />
+    <None Remove="images\shoes\3.jpg" />
+    <None Remove="images\shoes\4.jpg" />
+    <None Remove="images\shoes\5.jpg" />
+    <None Remove="images\shoes\6.jpg" />
+    <None Remove="images\shoes\7.jpg" />
+    <None Remove="images\shoes\8.jpg" />
+    <None Remove="images\shoes\9.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="images\Icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\Icon.JPG">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\Icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\picture.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\1.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\10.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\2.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\3.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\4.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\5.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\6.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\7.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\8.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\shoes\9.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\OnlineShoeStoreLibrary\OnlineShoeStoreLibrary.csproj" />
   </ItemGroup>
 
