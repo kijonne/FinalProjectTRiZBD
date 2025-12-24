@@ -25,96 +25,166 @@ namespace OnlineShoeStoreWpf
         private readonly OnlineShoeStoreContext _context;
         private readonly User _currentUser;
 
-        public ObservableCollection<ProductViewModel> Products { get; set; } = new();
-        public MainWindow() : this(null) { }
-        public MainWindow(User currentUser)
+        private ObservableCollection<ProductViewModel> _allProducts;
+        private ObservableCollection<ProductViewModel> _filteredProducts;
+
+        public MainWindow(OnlineShoeStoreContext context, User user)
         {
             InitializeComponent();
-            _context = new OnlineShoeStoreContext();
-            _currentUser = currentUser ?? null;
-            DataContext = this;
+            _context = context;
+            _currentUser = user;
 
-            Loaded += MainWindow_Loaded;
+            LoadData();
+            SetupUI();
         }
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void LoadData()
         {
-            await LoadProducts();
-
-            if (_currentUser != null && (_currentUser.Role.Name == "Администратор" || _currentUser.Role.Name == "Менеджер"))
-            {
-                var addButton = new Button { Content = "Добавить товар", Width = 150, Height = 40, Margin = new Thickness(10), Background = Brushes.LightGreen };
-                addButton.Click += (s, e) => OpenEditForm(null);
-
-                var editButton = new Button { Content = "Редактировать", Width = 150, Height = 40, Margin = new Thickness(10), Background = Brushes.MediumSpringGreen };
-                editButton.Click += (s, e) => OpenEditForm(ProductsList.SelectedItem as ProductViewModel);
-
-                var deleteButton = new Button { Content = "Удалить", Width = 150, Height = 40, Margin = new Thickness(10), Background = Brushes.IndianRed };
-                deleteButton.Click += async (s, e) => await DeleteProduct(ProductsList.SelectedItem as ProductViewModel);
-
-                AdminPanel.Children.Add(addButton);
-                AdminPanel.Children.Add(editButton);
-                AdminPanel.Children.Add(deleteButton);
-            }
-        }
-
-        private void OpenEditForm(ProductViewModel vm)
-        {
-            var product = vm?.Product ?? new Product(); // Здесь берём Product из ViewModel
-            var form = new EditProductWindow(product, _context);
-            if (form.ShowDialog() == true)
-            {
-                LoadProducts(); // Обновляем список
-            }
-        }
-
-        private void EditButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedVM = ProductsList.SelectedItem as ProductViewModel;
-            if (selectedVM == null) return;
-
-            var form = new EditProductWindow(selectedVM.Product, _context); // Здесь selectedVM.Product
-            if (form.ShowDialog() == true)
-            {
-                LoadProducts();
-            }
-        }
-
-        private void EditProduct(ProductViewModel vm)
-        {
-            if (vm == null) return;
-
-            var form = new EditProductWindow(vm.Product, _context); // Передаём именно Product
-
-            if (form.ShowDialog() == true)
-            {
-                LoadProducts(); // Обновляем список после сохранения
-            }
-        }
-
-        private async Task DeleteProduct(ProductViewModel vm)
-        {
-            if (vm == null) return;
-
-            _context.Products.Remove(vm.Product); // Здесь vm.Product
-            await _context.SaveChangesAsync();
-            await LoadProducts();
-        }
-
-        private async Task LoadProducts()
-        {
-            Products.Clear();
-
+            // Загрузка товаров
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Manufacturer)
                 .Include(p => p.Supplier)
                 .ToListAsync();
 
-            foreach (var p in products)
+            _allProducts = new ObservableCollection<ProductViewModel>(
+                products.Select(p => new ProductViewModel(p))
+            );
+
+            _filteredProducts = new ObservableCollection<ProductViewModel>(_allProducts);
+            ProductsList.ItemsSource = _filteredProducts;
+
+            // Загрузка производителей для фильтра
+            var manufacturers = await _context.Manufacturers.ToListAsync();
+            ManufacturerFilter.Items.Add(new ComboBoxItem { Content = "Все", Tag = 0 });
+            foreach (var m in manufacturers)
             {
-                Products.Add(new ProductViewModel(p));
+                ManufacturerFilter.Items.Add(new ComboBoxItem { Content = m.Name, Tag = m.ManufacturerId });
             }
+            ManufacturerFilter.SelectedIndex = 0;
+        }
+
+        private void SetupUI()
+        {
+            // Отображение ФИО пользователя
+            UserNameText.Text = $"{_currentUser.FirstName} {_currentUser.LastName}";
+            LogoutButton.Visibility = Visibility.Visible;
+
+            // Показать кнопки для админа/менеджера
+            if (_currentUser.Role.Name == "Администратор" || _currentUser.Role.Name == "Менеджер")
+            {
+                AdminPanel.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ApplyFilters()
+        {
+            var filtered = _allProducts.AsEnumerable();
+
+            // Поиск
+            if (!string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                filtered = filtered.Where(p => p.Description?.Contains(SearchBox.Text, StringComparison.OrdinalIgnoreCase) == true);
+            }
+
+            // Фильтр по производителю
+            if (ManufacturerFilter.SelectedItem is ComboBoxItem selectedManuf && (int)selectedManuf.Tag != 0)
+            {
+                filtered = filtered.Where(p => p.ManufacturerId == (int)selectedManuf.Tag);
+            }
+
+            // Фильтр по цене
+            if (decimal.TryParse(MaxPriceBox.Text, out var maxPrice))
+            {
+                filtered = filtered.Where(p => p.Price <= maxPrice);
+            }
+
+            // Только со скидкой
+            if (OnlyDiscountCheck.IsChecked == true)
+            {
+                filtered = filtered.Where(p => p.Discount > 0);
+            }
+
+            // Только в наличии
+            if (OnlyInStockCheck.IsChecked == true)
+            {
+                filtered = filtered.Where(p => p.Quantity > 0);
+            }
+
+            // Сортировка
+            filtered = SortComboBox.SelectedIndex switch
+            {
+                1 => filtered.OrderBy(p => p.FinalPrice),
+                2 => filtered.OrderByDescending(p => p.FinalPrice),
+                3 => filtered.OrderBy(p => p.SupplierName),
+                _ => filtered.OrderBy(p => p.CategoryName).ThenBy(p => p.ManufacturerName)
+            };
+
+            _filteredProducts.Clear();
+            foreach (var item in filtered)
+            {
+                _filteredProducts.Add(item);
+            }
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
+        private void ManufacturerFilter_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
+        private void MaxPriceBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
+        private void FilterCheckBox_Changed(object sender, RoutedEventArgs e) => ApplyFilters();
+        private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
+
+        private void AddButton_Click(object sender, RoutedEventArgs e)
+        {
+            var addWindow = new EditProductWindow(_context);
+            if (addWindow.ShowDialog() == true)
+            {
+                LoadData();
+            }
+        }
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProductsList.SelectedItem is ProductViewModel selected)
+            {
+                var editWindow = new EditProductWindow(_context, selected.ProductId);
+                if (editWindow.ShowDialog() == true)
+                {
+                    LoadData();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Выберите товар для редактирования", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProductsList.SelectedItem is ProductViewModel selected)
+            {
+                var result = MessageBox.Show($"Удалить товар {selected.Article}?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    var product = await _context.Products.FindAsync(selected.ProductId);
+                    if (product != null)
+                    {
+                        _context.Products.Remove(product);
+                        await _context.SaveChangesAsync();
+                        LoadData();
+                    } 
+                }
+            }
+            else
+            {
+                MessageBox.Show("Выберите товар для удаления", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var loginWindow = new LoginWindow();
+            loginWindow.Show();
+            this.Close();
         }
     }
 }

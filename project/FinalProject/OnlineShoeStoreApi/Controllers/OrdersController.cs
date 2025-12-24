@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineShoeStoreLibrary.Contexts;
+using OnlineShoeStoreLibrary.DTOs;
 using OnlineShoeStoreLibrary.Models;
 
 namespace OnlineShoeStoreApi.Controllers
@@ -10,55 +11,54 @@ namespace OnlineShoeStoreApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class OrdersController : ControllerBase
+    public class OrdersController(OnlineShoeStoreContext context) : ControllerBase
     {
-        private readonly OnlineShoeStoreContext _context;
-
-        public OrdersController(OnlineShoeStoreContext context)
-        {
-            _context = context;
-        }
+        private readonly OnlineShoeStoreContext _context = context;
+        private DateTime todayDate = DateTime.FromDateTime(DateTime.Now);
 
         // GET: api/orders/user/{login}
         [HttpGet("user/{login}")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByUserLogin(string login)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByUserLogin(string login)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == login);
-            if (user == null)
-                return NotFound(new { message = "Пользователь не найден" });
-
             var orders = await _context.Orders
                 .Include(o => o.User)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                .Where(o => o.UserId == user.UserId)
+                .Where(o => o.User.Login == login)
                 .ToListAsync();
 
-            return Ok(orders);
+            return orders is null ?
+                NotFound() :
+                Ok(orders.ToDtos());
         }
 
         // PUT: api/orders/{id}/status
         [HttpPut("{id}/status")]
         [Authorize(Roles = "Администратор,Менеджер")]
-        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
+        public async Task<ActionResult<OrderDto>> UpdateOrderStatus(int id, [FromQuery] DateTime? deliveryDate = null, [FromQuery] bool isFinished = false)
         {
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null)
-                return NotFound(new { message = "Заказ не найден" });
+            var order = await _context.Orders.FindAsync(id); // поиск заказа по id
 
-            order.IsFinished = dto.IsFinished;
-            order.DeliveryDate = dto.DeliveryDate;
+            if (order is null)
+                return NotFound();
 
-            await _context.SaveChangesAsync();
+            if (deliveryDate is null)
+                order.DeliveryDate = todayDate;
+            else
+                order.DeliveryDate = (DateTime)deliveryDate;
 
-            return NoContent();
+            order.IsFinished = isFinished;
+
+            try
+            {
+                await _context.SaveChangesAsync(); // Сохранение изменений в контексте
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return BadRequest();
+            }
+
+            return order.ToDto();
         }
-    }
 
-    // DTO для обновления статуса заказа
-    public class UpdateOrderStatusDto
-    {
-        public bool IsFinished { get; set; }
-        public DateTime DeliveryDate { get; set; }
+
     }
 }

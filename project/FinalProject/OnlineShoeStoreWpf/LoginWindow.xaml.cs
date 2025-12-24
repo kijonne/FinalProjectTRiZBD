@@ -1,64 +1,83 @@
 ﻿using OnlineShoeShopLibrary.Services;
 using OnlineShoeStoreLibrary.Contexts;
 using OnlineShoeStoreLibrary.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace OnlineShoeStoreWpf
 {
-    /// <summary>
-    /// Логика взаимодействия для LoginWindow.xaml
-    /// </summary>
     public partial class LoginWindow : Window
     {
         private readonly AuthService _authService;
+        private readonly OnlineShoeStoreContext _context;
 
         public LoginWindow()
         {
             InitializeComponent();
-            var context = new OnlineShoeStoreContext();
-            _authService = new AuthService(context);
-        }
-
-        private void GuestButton_Click(object sender, RoutedEventArgs e)
-        {
-            var main = new MainWindow(null);
-            main.Show();
-            this.Close();
+            _context = new OnlineShoeStoreContext();
+            _authService = new AuthService(_context);
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            var login = LoginTextBox.Text.Trim();
+            var login = LoginBox.Text.Trim();
             var password = PasswordBox.Password;
 
-            MessageBox.Show($"Пытаюсь войти: логин = '{login}', пароль = '{password}'");
-
-            var dto = new LoginDto(login, password);
-            var user = await _authService.AuthUserAsync(dto);
-
-            if (user == null)
+            if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Пользователь не найден или пароль неверный");
+                ShowError("Заполните все поля");
                 return;
             }
 
-            MessageBox.Show($"Успех! Роль: {user.Role.Name}, ФИО: {user.FirstName} {user.LastName}");
+            try
+            {
+                var dto = new LoginDto(login, password);
+                var user = await _authService.AuthUserAsync(dto);
 
-            var main = new MainWindow(user);
-            main.Show();
-            this.Close();
+                if (user == null)
+                {
+                    ShowError("Неверный логин или пароль");
+                    return;
+                }
+
+                // Успешный вход
+                var mainWindow = new MainWindow(_context, user);
+                mainWindow.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void GuestButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Гостевой вход как клиент
+                var dto = new LoginDto("client", "client");
+                var user = await _authService.AuthUserAsync(dto);
+
+                if (user == null)
+                {
+                    ShowError("Гостевой вход недоступен");
+                    return;
+                }
+
+                var mainWindow = new MainWindow(_context, user);
+                mainWindow.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ShowError(string message)
+        {
+            ErrorText.Text = message;
+            ErrorText.Visibility = Visibility.Visible;
         }
     }
 }

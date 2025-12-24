@@ -11,56 +11,79 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Артикул" Grid.Row="0" Margin="0,0,0,5"/>
-        <TextBox x:Name="ArticleTextBox" Grid.Row="0" Height="40" Margin="0,25,0,0"/>
+        <TextBlock Grid.Row="0" Text="Информация о товаре" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
 
-        <TextBlock Text="Цена" Grid.Row="1" Margin="0,20,0,5"/>
-        <TextBox x:Name="PriceTextBox" Grid.Row="1" Height="40" Margin="0,25,0,0"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Артикул -->
+                <TextBlock Text="Артикул:" Margin="0,0,0,5"/>
+                <TextBox x:Name="ArticleBox" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Скидка" Grid.Row="2" Margin="0,20,0,5"/>
-        <TextBox x:Name="DiscountTextBox" Grid.Row="2" Height="40" Margin="0,25,0,0"/>
+                <!-- Цена -->
+                <TextBlock Text="Цена:" Margin="0,0,0,5"/>
+                <TextBox x:Name="PriceBox" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Количество" Grid.Row="3" Margin="0,20,0,5"/>
-        <TextBox x:Name="QuantityTextBox" Grid.Row="3" Height="40" Margin="0,25,0,0"/>
+                <!-- Скидка -->
+                <TextBlock Text="Скидка (%):" Margin="0,0,0,5"/>
+                <TextBox x:Name="DiscountBox" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Описание" Grid.Row="4" Margin="0,20,0,5"/>
-        <TextBox x:Name="DescriptionTextBox" Grid.Row="4" Height="40" Margin="0,25,0,0"/>
+                <!-- Количество -->
+                <TextBlock Text="Количество:" Margin="0,0,0,5"/>
+                <TextBox x:Name="QuantityBox" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Размер" Grid.Row="5" Margin="0,20,0,5"/>
-        <TextBox x:Name="SizeTextBox" Grid.Row="5" Height="40" Margin="0,25,0,0"/>
+                <!-- Описание -->
+                <TextBlock Text="Описание:" Margin="0,0,0,5"/>
+                <TextBox x:Name="DescriptionBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Цвет" Grid.Row="6" Margin="0,20,0,5"/>
-        <TextBox x:Name="ColorTextBox" Grid.Row="6" Height="40" Margin="0,25,0,0"/>
+                <!-- Размер -->
+                <TextBlock Text="Размер:" Margin="0,0,0,5"/>
+                <TextBox x:Name="SizeBox" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Категория" Grid.Row="7" Margin="0,20,0,5"/>
-        <ComboBox x:Name="CategoryComboBox" Grid.Row="7" Height="40" Margin="0,25,0,0"/>
+                <!-- Цвет -->
+                <TextBlock Text="Цвет:" Margin="0,0,0,5"/>
+                <TextBox x:Name="ColorBox" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Производитель" Grid.Row="8" Margin="0,20,0,5"/>
-        <ComboBox x:Name="ManufacturerComboBox" Grid.Row="8" Height="40" Margin="0,25,0,0"/>
+                <!-- Пол -->
+                <TextBlock Text="Пол:" Margin="0,0,0,5"/>
+                <ComboBox x:Name="GenderCombo" Margin="0,0,0,15">
+                    <ComboBoxItem Content="Мужской" Tag="0"/>
+                    <ComboBoxItem Content="Женский" Tag="1"/>
+                </ComboBox>
 
-        <TextBlock Text="Поставщик" Grid.Row="9" Margin="0,20,0,5"/>
-        <ComboBox x:Name="SupplierComboBox" Grid.Row="9" Height="40" Margin="0,25,0,0"/>
+                <!-- Категория -->
+                <TextBlock Text="Категория:" Margin="0,0,0,5"/>
+                <ComboBox x:Name="CategoryCombo" DisplayMemberPath="Name" SelectedValuePath="CategoryId" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Фото" Grid.Row="10" Margin="0,20,0,5"/>
-        <Button Content="Выбрать фото" Grid.Row="10" Height="40" Margin="0,25,0,0" Click="ChoosePhotoButton_Click"/>
+                <!-- Производитель -->
+                <TextBlock Text="Производитель:" Margin="0,0,0,5"/>
+                <ComboBox x:Name="ManufacturerCombo" DisplayMemberPath="Name" SelectedValuePath="ManufacturerId" Margin="0,0,0,15"/>
 
-        <StackPanel Grid.Row="12" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,40">
-            <Button Content="Сохранить" Width="150" Height="50" Click="SaveButton_Click" Background="#00FA9A"/>
-            <Button Content="Отмена" Width="150" Height="50" Click="CancelButton_Click" Margin="20,0,0,0"/>
+                <!-- Поставщик -->
+                <TextBlock Text="Поставщик:" Margin="0,0,0,5"/>
+                <ComboBox x:Name="SupplierCombo" DisplayMemberPath="Name" SelectedValuePath="SupplierId" Margin="0,0,0,15"/>
+
+                <!-- Фото -->
+                <TextBlock Text="Фото товара:" Margin="0,0,0,5"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <Image x:Name="ProductImage" Width="150" Height="150" Stretch="Uniform" Margin="0,0,15,0"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <Button Content="Выбрать фото" Click="SelectPhotoButton_Click" Padding="10,5" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="PhotoNameText" Text="Файл не выбран" FontSize="12" Foreground="Gray"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Сохранить" Click="SaveButton_Click" Padding="20,8" Margin="0,0,10,0" 
+                    Background="#28a745" Foreground="White" BorderThickness="0" FontSize="14" Cursor="Hand"/>
+            <Button Content="Отмена" Click="CancelButton_Click" Padding="20,8" 
+                    Background="#6c757d" Foreground="White" BorderThickness="0" FontSize="14" Cursor="Hand"/>
         </StackPanel>
     </Grid>
 </Window>
