@@ -1,0 +1,11 @@
+﻿UserId;RoleId;FirstName;LastName;Patronymic;Login;PasswordHash
+1;1;Весения;Никифорова;Николаевна;94d5ous@gmail.com;$2a$11$4jBOGdDUf3K6YymyXaijXufRIjSuBfsR0f8h3v6IGVohnLM9LZVO6
+2;1;Руслан;Сазонов;Германович;uth4iz@mail.com;$2a$11$TkYOoEqSOidmxM/9Mi3bS.mZh.SOWYEbzqPnW9XyJFpaaycaXFktW
+3;1;Серафим;Одинцов;Артёмович;yzls62@outlook.com;$2a$11$VPvRzWDOYgKu4rlUtlwMsuj2C9CF/WmzmArlBtlWhDERY4nCC3xAi
+4;2;Михаил;Степанов;Артёмович;1diph5e@tutanota.com;$2a$11$fjGAE0NWrBISQXh1r7MQT.PKru4w05eYfzAqELnbhGjXXLgACq0Pi
+5;2;Петр;Ворсин;Евгеньевич;tjde7c@yahoo.com;$2a$11$l7OtDQeGSioXpAgz/SsGhuD7o5T1VTTFS1TkEKyX5kX0KVxvf6XC2
+6;2;Елена;Старикова;Павловна;wpmrc3do@tutanota.com;$2a$11$LTaVL0FHxa9tDxQbhp7NU.qTMnOeudJze8.Yh1VXLbZyc0oFF257G
+7;3;Анна;Михайлюк;Вячеславовна;5d4zbu@tutanota.com;$2a$11$0RqU3TSfziVWGQ9Qb3ewkO8REvMw7ARj3HBPngPcGr/FZ60TeDHAq
+8;3;Елена;Ситдикова;Анатольевна;ptec8ym@yahoo.com;$2a$11$6kLNVqXqz27BpyCJTsdoGeiB.0h0wyfooYyDcAxtXcZKAErwvSVS6
+9;3;Петр;Ворсин;Евгеньевич;1qz4kw@mail.com;$2a$11$aykH/It1r7.WjMI5XbdR..FKMeRqiMeGnWiiJvZSjVNlhofspqyti
+10;3;Елена;Старикова;Павловна;4np6se@mail.com;$2a$11$aLOfbqA0Qj/e0s8RdaDyeu7jk3biJhn2bB3i2.dKMxivle0p1RzeW
