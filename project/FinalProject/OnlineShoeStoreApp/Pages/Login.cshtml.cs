@@ -1,17 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using OnlineShoeStoreLibrary.Contexts;
-using OnlineShoeStoreLibrary.DTOs;
-using OnlineShoeStoreLibrary.Models;
-using OnlineShoeShopLibrary.Services;
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using BCrypt.Net;
 
 namespace OnlineShoeStoreApp.Pages
 {
@@ -19,51 +12,74 @@ namespace OnlineShoeStoreApp.Pages
     {
         private readonly OnlineShoeStoreContext _context;
 
+
         public LoginModel(OnlineShoeStoreContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public User User { get; set; } = new User(); // инициализируем, чтобы не null
+        public InputModel Input { get; set; } = new(); // инициализируем, чтобы не null
 
         public string ErrorMessage { get; set; } = string.Empty;
 
+        public class InputModel
+        {
+            [BindProperty]
+            public string Login { get; set; }
+            [BindProperty]
+            public string Password { get; set; }
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
-            if (string.IsNullOrWhiteSpace(User.Login) || string.IsNullOrWhiteSpace(User.PasswordHash))
+            if (string.IsNullOrWhiteSpace(Input.Login) || string.IsNullOrWhiteSpace(Input.Password))
             {
                 ErrorMessage = "Введите логин и пароль";
                 return Page();
             }
 
-            // Находим пользователя по логину
             var dbUser = await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Login == User.Login);
+                .FirstOrDefaultAsync(u => u.Login == Input.Login);
 
-            if (dbUser == null || !BCrypt.Net.BCrypt.Verify(User.PasswordHash, dbUser.PasswordHash))
+            if (dbUser == null)
             {
                 ErrorMessage = "Неверный логин или пароль";
                 return Page();
             }
 
-            // Создаём claims
-            var claims = new List<Claim>
+            bool passwordValid = false;
+            try
             {
-                new Claim(ClaimTypes.Name, dbUser.Login),
-                new Claim(ClaimTypes.NameIdentifier, dbUser.UserId.ToString()),
-                new Claim(ClaimTypes.GivenName, dbUser.FirstName),
-                new Claim(ClaimTypes.Surname, dbUser.LastName),
-                new Claim(ClaimTypes.Role, dbUser.Role.Name)
-            };
+                passwordValid = BCrypt.Net.BCrypt.EnhancedVerify(Input.Password, dbUser.PasswordHash);
+            }
+            catch (Exception)
+            {
+                passwordValid = false; // если хэш совсем плохой
+            }
+
+            if (!passwordValid)
+            {
+                ErrorMessage = "Неверный логин или пароль";
+                return Page();
+            }
+
+            // Успешный вход — редирект сработает!
+            var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, dbUser.Login),
+                    new Claim(ClaimTypes.NameIdentifier, dbUser.UserId.ToString()),
+                    new Claim("FullName", $"{dbUser.LastName} {dbUser.FirstName} {dbUser.Patronymic}".Trim()),
+                    new Claim(ClaimTypes.Role, dbUser.Role.Name)
+                };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            return RedirectToPage("/Products/Index");
+            return Redirect("~/Products/Index");
         }
 
         public IActionResult OnPostGuest()

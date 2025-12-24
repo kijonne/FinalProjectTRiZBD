@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using OnlineShoeStoreLibrary.Contexts;
 using OnlineShoeStoreLibrary.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OnlineShoeStoreApp.Pages.Products
 {
+
     public class IndexModel : PageModel
     {
         private readonly OnlineShoeStoreLibrary.Contexts.OnlineShoeStoreContext _context;
@@ -106,7 +108,7 @@ namespace OnlineShoeStoreApp.Pages.Products
         {
             if (!User.Identity.IsAuthenticated)
             {
-                return RedirectToPage("/Account/Login");
+                return RedirectToPage("/Login");
             }
 
             // Находим товар

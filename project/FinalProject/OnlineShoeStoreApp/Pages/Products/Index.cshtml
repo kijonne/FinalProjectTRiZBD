@@ -36,13 +36,27 @@
 
                 <div class="col-md-2">
                     <div class="form-check">
-                        <input type="checkbox" name="OnlyDiscount" class="form-check-input" id="onlyDiscount" @(Model.OnlyDiscount ? "checked" : "") />
-                        <label class="form-check-label" for="onlyDiscount">Только со скидкой</label>
+                        <input type="checkbox"
+                               name="OnlyDiscount"
+                               value="true"
+                               class="form-check-input"
+                               id="onlyDiscount"
+                               @(Model.OnlyDiscount ? "checked" : "") />
+                        <label class="form-check-label fw-bold" for="onlyDiscount">Только со скидкой</label>
                     </div>
                     <div class="form-check mt-2">
-                        <input type="checkbox" name="OnlyInStock" class="form-check-input" id="onlyInStock" @(Model.OnlyInStock ? "checked" : "") />
-                        <label class="form-check-label" for="onlyInStock">Только в наличии</label>
+                        <input type="checkbox"
+                               name="OnlyInStock"
+                               value="true"
+                               class="form-check-input"
+                               id="onlyInStock"
+                               @(Model.OnlyInStock ? "checked" : "") />
+                        <label class="form-check-label fw-bold" for="onlyInStock">Только в наличии</label>
                     </div>
+
+                    <!-- Важно: скрытые поля, чтобы передавать false при снятых чекбоксах -->
+                    <input type="hidden" name="OnlyDiscount" value="false" />
+                    <input type="hidden" name="OnlyInStock" value="false" />
                 </div>
 
                 <div class="col-md-2">

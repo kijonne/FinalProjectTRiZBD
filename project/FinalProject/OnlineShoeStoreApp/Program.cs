@@ -5,34 +5,35 @@ using OnlineShoeStoreLibrary.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// DbContext
 builder.Services.AddDbContext<OnlineShoeStoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<AuthService>();
 
+// ј”“≈Ќ“»‘» ј÷»я Ч Ё“ќ  Ћё„≈¬ќ… ЅЋќ 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Login"; // ѕуть к странице логина (у теб€ Login.cshtml)
-        options.AccessDeniedPath = "/AccessDenied"; // ќпционально
-        options.ExpireTimeSpan = TimeSpan.FromDays(14); //  уки на 14 дней
+        options.LoginPath = "/Login";
+        options.AccessDeniedPath = "/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
         options.SlidingExpiration = true;
+
+        // Ёти 4 строки Ч об€зательно дл€ записи куки в .NET 9
+        options.Cookie.Name = "OnlineShoeStore.AuthCookie";  // явное им€ Ч заставл€ет работать
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;  // Ѕез этого кука может не записатьс€
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
-builder.Services.AddDistributedMemoryCache(); //  эш дл€ сессий (in-memory)
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // ¬рем€ жизни сессии
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+builder.Services.AddAuthorization();
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -40,16 +41,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
-
-app.UseSession();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages().WithStaticAssets();
 
 app.Run();

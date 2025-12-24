@@ -71,7 +71,7 @@ namespace OnlineShoeStoreWpf
             LogoutButton.Visibility = Visibility.Visible;
 
             // Показать кнопки для админа/менеджера
-            if (_currentUser.Role.Name == "Администратор" || _currentUser.Role.Name == "Менеджер")
+            if (_currentUser.Role.Name == "Admin" || _currentUser.Role.Name == "Manager")
             {
                 AdminPanel.Visibility = Visibility.Visible;
             }
