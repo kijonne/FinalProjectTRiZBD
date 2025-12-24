@@ -1,4 +1,4 @@
-﻿
+﻿using OnlineShoeStoreLibrary.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,14 +10,14 @@ namespace OnlineShoeStoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class OrdersController(OnlineShoeStoreContext context) : ControllerBase
     {
         private readonly OnlineShoeStoreContext _context = context;
-        private DateTime todayDate = DateTime.FromDateTime(DateTime.Now);
+        private DateTime todayDate = DateTime.Now;
 
         // GET: api/orders/user/{login}
         [HttpGet("user/{login}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByUserLogin(string login)
         {
             var orders = await _context.Orders
@@ -32,7 +32,7 @@ namespace OnlineShoeStoreApi.Controllers
 
         // PUT: api/orders/{id}/status
         [HttpPut("{id}/status")]
-        [Authorize(Roles = "Администратор,Менеджер")]
+        [Authorize(Roles = "Администратор, Менеджер")]
         public async Task<ActionResult<OrderDto>> UpdateOrderStatus(int id, [FromQuery] DateTime? deliveryDate = null, [FromQuery] bool isFinished = false)
         {
             var order = await _context.Orders.FindAsync(id); // поиск заказа по id

@@ -1,62 +1,64 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OnlineShoeShopLibrary.Services;
 using OnlineShoeStoreLibrary.Contexts;
-using System.Text;
+using OnlineShoeStoreLibrary.Options;
+using Scalar.AspNetCore;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext
-builder.Services.AddDbContext<OnlineShoeStoreContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 
-// JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-        };
-    });
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthOptions.secretKey)),
+        ValidateLifetime = true,
 
-// Контроллеры
+        ValidateIssuer = true,
+        ValidIssuer = AuthOptions.issuer,
+        ValidateAudience = true,
+        ValidAudience = AuthOptions.audience,
+
+        ClockSkew = TimeSpan.FromMinutes(15),
+    };
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        // Это ключевое — игнорируем циклы в навигационных свойствах EF
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+
+        // Дополнительно — нечувствительность к регистру (чтобы логин принимал любой регистр)
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+
+        // Максимальная глубина (на всякий случай)
+        options.JsonSerializerOptions.MaxDepth = 64;
     });
 
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-
-
-builder.Services.AddAuthorization();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddDbContext<OnlineShoeStoreContext>();
 
 var app = builder.Build();
 
-// Swagger только в Development
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -39,7 +39,7 @@ namespace FinalProject.Api.Controllers
                 .FirstOrDefaultAsync(p => p.Article == article);
 
             if (product == null)
-                return NotFound(new { message = "Товар не найден" });
+                return NotFound();
 
             return product;
         }
@@ -58,10 +58,10 @@ namespace FinalProject.Api.Controllers
         // PUT: api/products/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Администратор,Менеджер")]
-        public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
+        public async Task<IActionResult> UpdateProduct(int id, Product product)
         {
             if (id != product.ProductId)
-                return BadRequest(new { message = "ID товара не совпадает" });
+                return BadRequest();
 
             _context.Entry(product).State = EntityState.Modified;
 
@@ -71,9 +71,10 @@ namespace FinalProject.Api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
-                    return NotFound(new { message = "Товар не найден" });
-                throw;
+                if (!await ProductExists(id))
+                    return NotFound();
+                else
+                    throw;
             }
 
             return NoContent();
@@ -86,7 +87,7 @@ namespace FinalProject.Api.Controllers
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null)
-                return NotFound(new { message = "Товар не найден" });
+                return NotFound();
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
@@ -94,9 +95,9 @@ namespace FinalProject.Api.Controllers
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private async Task<bool> ProductExists(int id)
         {
-            return _context.Products.Any(e => e.ProductId == id);
+            return await _context.Products.AnyAsync(e => e.ProductId == id);
         }
     }
 }
