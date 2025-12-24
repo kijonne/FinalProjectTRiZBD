@@ -8,170 +8,86 @@
         Title="Каталог обуви" Height="800" Width="1500"
         FontFamily="Times New Roman" FontSize="14"
         Background="White">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Панель пользователя -->
-        <Border Grid.Row="0" Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="0,0,0,1" Padding="20,10">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBlock x:Name="UserNameText" Text="Пользователь" FontSize="16" Margin="0,0,20,0" VerticalAlignment="Center"/>
-                <Button x:Name="LogoutButton" Content="Выйти" Click="LogoutButton_Click" 
-                        Padding="15,5" FontSize="14" Visibility="Collapsed"/>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
+    <ScrollViewer Grid.Row="0" Grid.RowSpan="3" VerticalScrollBarVisibility="Auto" Padding="20">
+        <StackPanel>
+            <!-- Фильтры (оставил как было, но можно обернуть в #7FFF00 если хочешь) -->
+            <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+                <TextBlock Text="Поиск по описанию:" Margin="5" VerticalAlignment="Center"/>
+                <TextBox Width="150" Text="{Binding SearchDescription, UpdateSourceTrigger=PropertyChanged}" Margin="5" />
+                <TextBlock Text="Производитель:" Margin="5" VerticalAlignment="Center"/>
+                <ComboBox Width="150" ItemsSource="{Binding Manufacturers}" SelectedItem="{Binding SelectedManufacturer}" DisplayMemberPath="Name" Margin="5" />
+                <TextBlock Text="Цена не более:" Margin="5" VerticalAlignment="Center"/>
+                <TextBox Width="100" Text="{Binding MaxPrice, UpdateSourceTrigger=PropertyChanged}" Margin="5" />
+                <CheckBox Content="Только со скидкой" IsChecked="{Binding OnlyDiscount}" Margin="5" VerticalAlignment="Center"/>
+                <CheckBox Content="Только в наличии" IsChecked="{Binding OnlyInStock}" Margin="5" VerticalAlignment="Center"/>
+                <TextBlock Text="Сортировка:" Margin="5" VerticalAlignment="Center"/>
+                <ComboBox Width="150" SelectedItem="{Binding SortOrder}" Margin="5">
+                    <ComboBoxItem Content="По артикулу" Tag="article_asc" />
+                    <ComboBoxItem Content="По поставщику" Tag="supplier_asc" />
+                    <ComboBoxItem Content="По цене (возр.)" Tag="price_asc" />
+                    <ComboBoxItem Content="По цене (убыв.)" Tag="price_desc" />
+                </ComboBox>
+                <Button Content="Применить" Background="#00FA9A" FontWeight="Bold" Click="ApplyFilter_Click" Margin="10,5" Padding="20,8"/>
             </StackPanel>
-        </Border>
 
-        <!-- Фильтры и кнопки -->
-        <Border Grid.Row="1" Background="#ffffff" BorderBrush="#dee2e6" BorderThickness="0,0,0,1" Padding="20">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <!-- Карточки товаров -->
+            <ItemsControl ItemsSource="{Binding Products}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="Black" BorderThickness="1" Margin="50,20" Padding="20" Background="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                <!-- Первая строка фильтров -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBox x:Name="SearchBox" Width="200" Margin="0,0,20,0" TextChanged="SearchBox_TextChanged"/>
+                                <!-- Фото слева -->
+                                <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1" Margin="0,0,20,0">
+                                    <Grid>
+                                        <TextBlock Text="Фото" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"/>
+                                        <Image Source="{Binding PhotoName, StringFormat=wwwroot/images/shoes/{0}}" Stretch="Uniform"/>
+                                    </Grid>
+                                </Border>
 
-                    <TextBlock Text="Производитель:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <ComboBox x:Name="ManufacturerFilter" Width="150" Margin="0,0,20,0" 
-                              SelectionChanged="ManufacturerFilter_SelectionChanged"/>
-
-                    <TextBlock Text="Макс. цена:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBox x:Name="MaxPriceBox" Width="100" Margin="0,0,20,0" TextChanged="MaxPriceBox_TextChanged"/>
-
-                    <TextBlock Text="Сортировка:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <ComboBox x:Name="SortComboBox" Width="150" SelectionChanged="SortComboBox_SelectionChanged">
-                        <ComboBoxItem Content="По умолчанию" IsSelected="True"/>
-                        <ComboBoxItem Content="Цена (возр.)"/>
-                        <ComboBoxItem Content="Цена (убыв.)"/>
-                        <ComboBoxItem Content="Поставщик"/>
-                    </ComboBox>
-                </StackPanel>
-
-                <!-- Вторая строка: чекбоксы + кнопки -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <CheckBox x:Name="OnlyDiscountCheck" Content="Только со скидкой" Margin="0,0,20,0" 
-                              Checked="FilterCheckBox_Changed" Unchecked="FilterCheckBox_Changed"/>
-                    <CheckBox x:Name="OnlyInStockCheck" Content="Только в наличии" Margin="0,0,20,0"
-                              Checked="FilterCheckBox_Changed" Unchecked="FilterCheckBox_Changed"/>
-
-                    <!-- Кнопки для админа/менеджера -->
-                    <StackPanel x:Name="AdminPanel" Orientation="Horizontal" Margin="20,0,0,0" Visibility="Collapsed">
-                        <Button x:Name="AddButton" Content="Добавить товар" Click="AddButton_Click" 
-                                Padding="15,5" Margin="0,0,10,0" Background="#28a745" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                        <Button x:Name="EditButton" Content="Редактировать" Click="EditButton_Click" 
-                                Padding="15,5" Margin="0,0,10,0" Background="#007bff" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                        <Button x:Name="DeleteButton" Content="Удалить" Click="DeleteButton_Click" 
-                                Padding="15,5" Background="#dc3545" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                    </StackPanel>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- Список товаров -->
-        <ListView x:Name="ProductsList" Grid.Row="2" Margin="20" SelectionMode="Single"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Border Width="1100" Height="200" Margin="0,10"
-                            BorderThickness="3" CornerRadius="10"
-                            Background="White">
-                        <!-- Цвет рамки по условию -->
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="BorderBrush" Value="#28a745"/>
-                                <Style.Triggers>
-                                    <!-- Нет на складе — голубая рамка -->
-                                    <DataTrigger Binding="{Binding Quantity}" Value="0">
-                                        <Setter Property="BorderBrush" Value="LightBlue"/>
-                                        <Setter Property="BorderThickness" Value="5"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="180"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Фото слева -->
-                            <Image Source="{Binding PhotoPath}" Stretch="Uniform" Margin="10"/>
-
-                            <!-- Информация справа -->
-                            <StackPanel Grid.Column="1" Margin="15,10">
-                                <!-- Заголовок -->
-                                <TextBlock FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,8">
-                                    <Run Text="{Binding CategoryName}"/>
-                                    <Run Text=" | "/>
-                                    <Run Text="{Binding ManufacturerName}"/>
-                                    <Run Text=" | Арт: "/>
-                                    <Run Text="{Binding Article}"/>
-                                </TextBlock>
-
-                                <!-- Описание -->
-                                <TextBlock Text="{Binding Description, StringFormat='Описание: {0}', TargetNullValue='Описание: —'}" 
-                                           Margin="0,2" FontSize="13"/>
-
-                                <!-- Поставщик -->
-                                <TextBlock Text="{Binding SupplierName, StringFormat='Поставщик: {0}'}" 
-                                           Margin="0,2" FontSize="13"/>
-
-                                <!-- Цена -->
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,3">
-                                    <!-- Старая цена (если скидка) -->
-                                    <TextBlock Text="{Binding Price, StringFormat={}{0} руб.}"
-                                               FontSize="14"
-                                               TextDecorations="Strikethrough" Foreground="Red"
-                                               Margin="0,0,10,0">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding HasDiscount}" Value="True">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
+                                <!-- Текст справа -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock FontWeight="Bold" FontSize="16" Margin="0,0,0,10">
+                    <Run Text="Категория товара: "/>
+                    <Run Text="{Binding Category.Name}"/>
+                    <Run Text=" | "/>
+                    <Run Text="{Binding Name}"/>
                                     </TextBlock>
-
-                                    <!-- Новая цена -->
-                                    <TextBlock Text="{Binding FinalPrice, StringFormat={}{0} руб.}"
-                                               FontSize="18" FontWeight="Bold" Foreground="Black"/>
-
-                                    <!-- Бейдж скидки -->
-                                    <Border Background="#28a745" CornerRadius="5" Padding="6,2" Margin="10,0,0,0"
-                                            VerticalAlignment="Center">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding HasDiscount}" Value="True">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding Discount, StringFormat='-{0}%'}"
-                                                   Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                    </Border>
+                                    <TextBlock Text="{Binding Description, StringFormat='Описание товара: {0}'}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="{Binding Manufacturer.Name, StringFormat='Производитель: {0}'}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="{Binding Supplier.Name, StringFormat='Поставщик: {0}'}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="{Binding Price, StringFormat='Цена: {0}'}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Единица измерения: шт." Margin="0,0,0,8"/>
+                                    <TextBlock Text="{Binding Quantity, StringFormat='Количество на складе: {0}'}" />
                                 </StackPanel>
 
-                                <!-- Количество -->
-                                <TextBlock Text="{Binding Quantity, StringFormat='Количество на складе: {0} шт.'}" 
-                                           Margin="0,2" FontSize="12"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+                                <!-- Бейдж скидки -->
+                                <Border Grid.Column="2" Background="#00FA9A" Padding="15,8" CornerRadius="10"
+                    Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding Discount, StringFormat='Действующая скидка {0}%'}" 
+                           Foreground="White" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Кнопки админа -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10"
+                    Visibility="{Binding IsAdminOrManager, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Button Content="Добавление" Click="AddProduct_Click" Margin="5" Padding="15,8"/>
+                <Button Content="Редактирование" Click="EditProduct_Click" Margin="5" Padding="15,8"/>
+                <Button Content="Удаление" Click="DeleteProduct_Click" Margin="5" Padding="15,8"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

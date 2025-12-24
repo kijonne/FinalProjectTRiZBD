@@ -1,83 +1,82 @@
-﻿using OnlineShoeShopLibrary.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using OnlineShoeShopLibrary.Services;
 using OnlineShoeStoreLibrary.Contexts;
 using OnlineShoeStoreLibrary.DTOs;
+using System.Security.Claims;
 using System.Windows;
 
 namespace OnlineShoeStoreWpf
 {
     public partial class LoginWindow : Window
     {
-        private readonly AuthService _authService;
-        private readonly OnlineShoeStoreContext _context;
+        private readonly OnlineShoeStoreContext _context = new();
+
+        public ClaimsPrincipal CurrentUser { get; private set; }
 
         public LoginWindow()
         {
             InitializeComponent();
-            _context = new OnlineShoeStoreContext();
-            _authService = new AuthService(_context);
         }
 
-        private async void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            var login = LoginBox.Text.Trim();
-            var password = PasswordBox.Password;
+            string login = LoginTextBox.Text.Trim();
+            string password = PasswordBox.Password;
 
             if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
-                ShowError("Заполните все поля");
+                ErrorTextBlock.Text = "Введите логин и пароль";
                 return;
             }
 
+            // Синхронный запрос вместо async
+            var dbUser = _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefault(u => u.Login == login);
+
+            if (dbUser == null)
+            {
+                ErrorTextBlock.Text = "Неверный логин или пароль";
+                return;
+            }
+
+            bool passwordValid = false;
             try
             {
-                var dto = new LoginDto(login, password);
-                var user = await _authService.AuthUserAsync(dto);
-
-                if (user == null)
-                {
-                    ShowError("Неверный логин или пароль");
-                    return;
-                }
-
-                // Успешный вход
-                var mainWindow = new MainWindow(_context, user);
-                mainWindow.Show();
-                this.Close();
+                passwordValid = BCrypt.Net.BCrypt.EnhancedVerify(password, dbUser.PasswordHash);
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                passwordValid = false;
             }
+
+            if (!passwordValid)
+            {
+                ErrorTextBlock.Text = "Неверный логин или пароль";
+                return;
+            }
+
+            // Создаём claims (как у тебя)
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, dbUser.Login),
+                new Claim(ClaimTypes.NameIdentifier, dbUser.UserId.ToString()),
+                new Claim("FullName", $"{dbUser.LastName} {dbUser.FirstName} {dbUser.Patronymic}".Trim()),
+                new Claim(ClaimTypes.Role, dbUser.Role.Name)
+            };
+
+            App.CurrentUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "Custom"));
+            var mainWindow = new MainWindow();  // ← Открываем MainWindow
+            mainWindow.Show();
+            Close();  // ← Закрываем логин
         }
 
-        private async void GuestButton_Click(object sender, RoutedEventArgs e)
+        private void GuestButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Гостевой вход как клиент
-                var dto = new LoginDto("client", "client");
-                var user = await _authService.AuthUserAsync(dto);
-
-                if (user == null)
-                {
-                    ShowError("Гостевой вход недоступен");
-                    return;
-                }
-
-                var mainWindow = new MainWindow(_context, user);
-                mainWindow.Show();
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ShowError(string message)
-        {
-            ErrorText.Text = message;
-            ErrorText.Visibility = Visibility.Visible;
+            App.CurrentUser = new ClaimsPrincipal(new ClaimsIdentity());
+            var mainWindow = new MainWindow();  // ← Открываем MainWindow
+            mainWindow.Show();
+            Close();  // ← Закрываем логин
         }
     }
 }
