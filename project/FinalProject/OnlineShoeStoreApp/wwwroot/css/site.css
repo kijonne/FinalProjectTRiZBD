@@ -47,3 +47,16 @@ body {
     .accent-btn:hover {
         background-color: #00D080 !important;
     }
+
+.product-card,
+.card,
+.discount-badge,
+.accent-btn,
+.btn {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.big-discount {
+    box-shadow: none !important;
+}

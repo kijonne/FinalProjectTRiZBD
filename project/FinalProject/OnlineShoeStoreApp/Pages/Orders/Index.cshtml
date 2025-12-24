@@ -2,12 +2,12 @@
 @model OnlineShoeStoreApp.Pages.Orders.IndexModel
 
 @{
-    ViewData["Title"] = "Мои заказы";
+    ViewData["Title"] = "Заказы";
 }
 
 <div class="container my-5">
     <h1 class="text-center mb-5" style="font-family: 'Times New Roman'; font-size: 3rem;">
-        @if (User.IsInRole("admin") || User.IsInRole("manager"))
+        @if (User.IsInRole("Администратор") || User.IsInRole("Менеджер"))
         {
             <text>Все заказы</text>
         }
@@ -44,15 +44,12 @@
                         <td>@order.OrderDate.ToString("dd.MM.yyyy")</td>
                         <td>@order.DeliveryDate.ToString("dd.MM.yyyy")</td>
                         <td>
-                            <ul class="mb-0 ps-3">
-                                @foreach (var item in order.OrderItems)
-                                {
-                                    <li>@item.Product.Article (@item.Quantity шт.) — @Math.Round(item.Quantity * item.Product.Price * (1 - item.Product.Discount / 100m)) руб.</li>
-                                }
-                            </ul>
+                            @string.Join(", ", order.OrderItems.Select(item =>
+                            $"{item.Product.Article} ({item.Quantity} шт.) — {Math.Round(item.Quantity * item.Product.Price * (1 - item.Product.Discount / 100m))} руб."
+                                        ))
                         </td>
-                        <td><strong>@order.ReceiveCode</strong></td>
-                        <td><strong>@Math.Round(total) руб.</strong></td>
+                        <td>@order.ReceiveCode</td>
+                        <td>@Math.Round(total) руб.</td>
                         <td>@(order.IsFinished ? "Доставлен" : "Новый")</td>
                     </tr>
                 }
