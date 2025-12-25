@@ -21,6 +21,10 @@ namespace OnlineShoeStoreWpf
 
         private Grid ProductGrid => (Grid)Content;
 
+        /// <summary>
+        /// Конструктор окна редактирования товара
+        /// </summary>
+        /// <param name="product">Товар для редактирования</param>
         public EditProductWindow(Product product)
         {
             InitializeComponent();
@@ -42,6 +46,10 @@ namespace OnlineShoeStoreWpf
             ProductGrid.DataContext = _product;
         }
 
+        /// <summary>
+        /// Обрабатывает выбор фотографии для товара
+        /// Копирует выбранный файл в папку images/shoes
+        /// </summary>
         private void ChoosePhoto_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog
@@ -61,6 +69,9 @@ namespace OnlineShoeStoreWpf
             }
         }
 
+        /// <summary>
+        /// Сохраняет изменения товара в базе данных
+        /// </summary>
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             _product.CategoryId = SelectedCategory?.CategoryId ?? 0;

@@ -19,6 +19,7 @@ namespace OnlineShoeStoreWpf
         public bool OnlyDiscount { get; set; }
         public bool OnlyInStock { get; set; }
         public string SortOrder { get; set; } = "article_asc";
+        public Product SelectedProduct { get; set; }
         public bool IsAdminOrManager => App.CurrentUser?.IsInRole("Администратор") == true || App.CurrentUser?.IsInRole("Менеджер") == true;
         public MainWindowViewModel()
         {
@@ -36,16 +37,29 @@ namespace OnlineShoeStoreWpf
                 .Include(p => p.Manufacturer)
                 .Include(p => p.Supplier)
                 .AsQueryable();
+
+            // Фильтр по описанию
             if (!string.IsNullOrWhiteSpace(SearchDescription))
                 query = query.Where(p => EF.Functions.Like(p.Description, $"%{SearchDescription}%"));
+
+            // Фильтр по производителю
             if (SelectedManufacturer != null)
                 query = query.Where(p => p.ManufacturerId == SelectedManufacturer.ManufacturerId);
+
+
+            // Фильтр по максимальной цене
             if (MaxPrice.HasValue)
                 query = query.Where(p => p.Price <= MaxPrice.Value);
+
+            // Фильтр "только со скидкой"
             if (OnlyDiscount)
                 query = query.Where(p => p.Discount > 0);
+
+            // Фильтр "только в наличии"
             if (OnlyInStock)
                 query = query.Where(p => p.Quantity > 0);
+
+            // Сортировка в зависимости от выбранного порядка
             query = SortOrder switch
             {
                 "supplier_asc" => query.OrderBy(p => p.Supplier.Name),

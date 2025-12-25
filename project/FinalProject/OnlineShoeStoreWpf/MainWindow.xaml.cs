@@ -1,12 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using OnlineShoeStoreLibrary.Contexts;
-using OnlineShoeStoreLibrary.Models;
-using OnlineShoeStoreWpf;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows;
 namespace OnlineShoeStoreWpf
 {
     public partial class MainWindow : Window
@@ -29,11 +21,11 @@ namespace OnlineShoeStoreWpf
         }
         private void EditProduct_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.EditProduct(DataGrid.SelectedItem as Product);
+            //ViewModel.EditProduct();
         }
         private void DeleteProduct_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.DeleteProduct(DataGrid.SelectedItem as Product);
+            //ViewModel.DeleteProduct();
         }
     }
 }
