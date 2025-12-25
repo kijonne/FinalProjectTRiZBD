@@ -53,8 +53,6 @@
                                @(Model.OnlyInStock ? "checked" : "") />
                         <label class="form-check-label fw-bold" for="onlyInStock">Только в наличии</label>
                     </div>
-
-                    <!-- Важно: скрытые поля, чтобы передавать false при снятых чекбоксах -->
                     <input type="hidden" name="OnlyDiscount" value="false" />
                     <input type="hidden" name="OnlyInStock" value="false" />
                 </div>
@@ -76,8 +74,6 @@
             </div>
         </form>
     </div>    
-
-    <!-- Сообщение, если ничего не найдено -->
     @if (Model.NoResults)
     {
         <div class="alert alert-warning text-center fs-3">
@@ -96,11 +92,10 @@
                 <div class="col-12">
                     <div class="product-card @(isBigDiscount ? "big-discount" : "")">
                         <div class="row g-0 align-items-start">
-                            <!-- Фото слева -->
                             <div class="col-md-4 p-4 text-center">
                                 <img src="@(string.IsNullOrEmpty(item.PhotoName)
-                                                                                 ? "/images/picture.png"
-                                                                                 : "/images/shoes/" + item.PhotoName)"
+                                    ? "/images/picture.png"
+                                    : "/images/shoes/" + item.PhotoName)"
                              class="img-fluid rounded"
                              alt="@item.Article"
                              style="max-height: 350px; object-fit: contain;" />
@@ -109,7 +104,7 @@
                         @if (hasDiscount)
                         {
                             <div class="discount-badge">
-                                Действующая<br>скидка<br><strong>@item.Discount%</strong>
+                                Действующая<br>скидка<br>@item.Discount%
                             </div>
                         }
 
@@ -135,7 +130,7 @@
                                     }
                                     </p>
                                     <p><strong>Единица измерения:</strong> @item.Unit</p>
-                                    <p><strong>Количество на складе:</strong> @item.Quantity шт.</p>
+                                    <p><strong>Количество на складе:</strong> @item.Quantity</p>
                                 </div>
                             </div>
                         </div>

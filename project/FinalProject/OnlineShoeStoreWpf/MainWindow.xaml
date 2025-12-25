@@ -13,7 +13,6 @@
     </Window.Resources>
     <ScrollViewer Grid.Row="0" Grid.RowSpan="3" VerticalScrollBarVisibility="Auto" Padding="20">
         <StackPanel>
-            <!-- Фильтры (оставил как было, но можно обернуть в #7FFF00 если хочешь) -->
             <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
                 <TextBlock Text="Поиск по описанию:" Margin="5" VerticalAlignment="Center"/>
                 <TextBox Width="150" Text="{Binding SearchDescription, UpdateSourceTrigger=PropertyChanged}" Margin="5" />
@@ -33,7 +32,6 @@
                 <Button Content="Применить" Background="#00FA9A" FontWeight="Bold" Click="ApplyFilter_Click" Margin="10,5" Padding="20,8"/>
             </StackPanel>
 
-            <!-- Карточки товаров -->
             <ItemsControl ItemsSource="{Binding Products}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -45,7 +43,6 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Фото слева -->
                                 <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1" Margin="0,0,20,0">
                                     <Grid>
                                         <TextBlock Text="Фото" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"/>
@@ -53,13 +50,12 @@
                                     </Grid>
                                 </Border>
 
-                                <!-- Текст справа -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock FontWeight="Bold" FontSize="16" Margin="0,0,0,10">
-                    <Run Text="Категория товара: "/>
-                    <Run Text="{Binding Category.Name}"/>
-                    <Run Text=" | "/>
-                    <Run Text="{Binding Name}"/>
+                                        <Run Text="Категория товара: "/>
+                                        <Run Text="{Binding Category.Name}"/>
+                                        <Run Text=" | "/>
+                                        <Run Text="{Binding Name}"/>        
                                     </TextBlock>
                                     <TextBlock Text="{Binding Description, StringFormat='Описание товара: {0}'}" Margin="0,0,0,8"/>
                                     <TextBlock Text="{Binding Manufacturer.Name, StringFormat='Производитель: {0}'}" Margin="0,0,0,8"/>
@@ -69,11 +65,10 @@
                                     <TextBlock Text="{Binding Quantity, StringFormat='Количество на складе: {0}'}" />
                                 </StackPanel>
 
-                                <!-- Бейдж скидки -->
                                 <Border Grid.Column="2" Background="#00FA9A" Padding="15,8" CornerRadius="10"
-                    Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <TextBlock Text="{Binding Discount, StringFormat='Действующая скидка {0}%'}" 
-                           Foreground="White" FontWeight="Bold"/>
+                                        Foreground="White" FontWeight="Bold"/>
                                 </Border>
                             </Grid>
                         </Border>
@@ -81,7 +76,6 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Кнопки админа -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10"
                     Visibility="{Binding IsAdminOrManager, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Button Content="Добавление" Click="AddProduct_Click" Margin="5" Padding="15,8"/>

@@ -13,7 +13,7 @@
             <div class="alert alert-danger">@Model.ErrorMessage</div>
         }
         <form method="post">
-            <anti-forgery-token /> <!-- Это ключевой тег! -->
+            <anti-forgery-token />
             <div class="form-group mb-3">
                 <label class="control-label">Логин</label>
                 <input asp-for="Input.Login" class="form-control" />

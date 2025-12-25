@@ -12,14 +12,13 @@ namespace OnlineShoeStoreApp.Pages
     {
         private readonly OnlineShoeStoreContext _context;
 
-
         public LoginModel(OnlineShoeStoreContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public InputModel Input { get; set; } = new(); // инициализируем, чтобы не null
+        public InputModel Input { get; set; } = new(); 
 
         public string ErrorMessage { get; set; } = string.Empty;
 
@@ -43,29 +42,12 @@ namespace OnlineShoeStoreApp.Pages
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Login == Input.Login);
 
-            if (dbUser == null)
+            if (dbUser == null || !BCrypt.Net.BCrypt.EnhancedVerify(Input.Password, dbUser.PasswordHash))
             {
                 ErrorMessage = "Неверный логин или пароль";
                 return Page();
             }
 
-            bool passwordValid = false;
-            try
-            {
-                passwordValid = BCrypt.Net.BCrypt.EnhancedVerify(Input.Password, dbUser.PasswordHash);
-            }
-            catch (Exception)
-            {
-                passwordValid = false; // если хэш совсем плохой
-            }
-
-            if (!passwordValid)
-            {
-                ErrorMessage = "Неверный логин или пароль";
-                return Page();
-            }
-
-            // Успешный вход — редирект сработает!
             var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, dbUser.Login),

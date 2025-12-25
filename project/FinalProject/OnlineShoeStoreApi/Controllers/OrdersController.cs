@@ -35,7 +35,7 @@ namespace OnlineShoeStoreApi.Controllers
         [Authorize(Roles = "Администратор, Менеджер")]
         public async Task<ActionResult<OrderDto>> UpdateOrderStatus(int id, [FromQuery] DateTime? deliveryDate = null, [FromQuery] bool isFinished = false)
         {
-            var order = await _context.Orders.FindAsync(id); // поиск заказа по id
+            var order = await _context.Orders.FindAsync(id);
 
             if (order is null)
                 return NotFound();
@@ -49,7 +49,7 @@ namespace OnlineShoeStoreApi.Controllers
 
             try
             {
-                await _context.SaveChangesAsync(); // Сохранение изменений в контексте
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {

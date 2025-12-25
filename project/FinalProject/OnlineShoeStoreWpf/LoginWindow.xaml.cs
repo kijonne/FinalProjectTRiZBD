@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OnlineShoeShopLibrary.Services;
 using OnlineShoeStoreLibrary.Contexts;
-using OnlineShoeStoreLibrary.DTOs;
 using System.Security.Claims;
 using System.Windows;
 
@@ -29,34 +27,16 @@ namespace OnlineShoeStoreWpf
                 return;
             }
 
-            // Синхронный запрос вместо async
             var dbUser = _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefault(u => u.Login == login);
 
-            if (dbUser == null)
+            if (dbUser == null || !BCrypt.Net.BCrypt.EnhancedVerify(password, dbUser.PasswordHash))
             {
                 ErrorTextBlock.Text = "Неверный логин или пароль";
                 return;
             }
 
-            bool passwordValid = false;
-            try
-            {
-                passwordValid = BCrypt.Net.BCrypt.EnhancedVerify(password, dbUser.PasswordHash);
-            }
-            catch
-            {
-                passwordValid = false;
-            }
-
-            if (!passwordValid)
-            {
-                ErrorTextBlock.Text = "Неверный логин или пароль";
-                return;
-            }
-
-            // Создаём claims (как у тебя)
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, dbUser.Login),
@@ -66,17 +46,17 @@ namespace OnlineShoeStoreWpf
             };
 
             App.CurrentUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "Custom"));
-            var mainWindow = new MainWindow();  // ← Открываем MainWindow
+            var mainWindow = new MainWindow();
             mainWindow.Show();
-            Close();  // ← Закрываем логин
+            Close();
         }
 
         private void GuestButton_Click(object sender, RoutedEventArgs e)
         {
             App.CurrentUser = new ClaimsPrincipal(new ClaimsIdentity());
-            var mainWindow = new MainWindow();  // ← Открываем MainWindow
+            var mainWindow = new MainWindow();
             mainWindow.Show();
-            Close();  // ← Закрываем логин
+            Close();
         }
     }
 }

@@ -11,73 +11,72 @@ using System.Text;
 namespace OnlineShoeShopLibrary.Services
 {
     /// <summary>
-    /// Сервис для работы с авторизацией пользователей
+    /// Сервис авторизации пользователей
     /// </summary>
-    /// <param name="context">контекст базы данных</param>
+    /// <param name="context">Контекст БД</param>
     public class AuthService(OnlineShoeStoreContext context)
     {
 
         private readonly OnlineShoeStoreContext _context = context;
-        private int _jwtActiveMinutes = 15; //срок действия jwt ключа в минутах
+        private int _jwtActiveMinutes = 15;
 
         /// <summary>
-        /// Проверка корректности пароля (хеша)
+        /// Проверка введенного пароля с хешем из бд
         /// </summary>
-        /// <param name="password">пароль введённый пользователем</param>
-        /// <param name="passwordHash">хешиованный пароль из БД</param>
-        /// <returns>Если пароль верный возвращает true, в противном случае false</returns>
+        /// <param name="password">Пароль, который ввел пользователь</param>
+        /// <param name="passwordHash">Хешиованный пароль из БД</param>
+        /// <returns>true, если пароль верный, иначе false</returns>
         private bool VerifyPassword(string password, string passwordHash)
             => BCrypt.Net.BCrypt.EnhancedVerify(password, passwordHash);
 
         /// <summary>
-        /// Метод аутентификации пользователя
+        /// Аутентификации пользователя
         /// </summary>
-        /// <param name="request">пароль и логин введёный пользователём</param>
-        /// <returns>Если авторизация прошла успешна, возвращает объект пользователя</returns>
+        /// <param name="request">пароль и логин, который ввел пользователь</param>
+        /// <returns>Объект пользователя при успехе, иначе null</returns>
         public async Task<User?> AuthUserAsync(LoginDto request)
         {
             string login = request.Login;
             string password = request.Password;
 
-            if (String.IsNullOrEmpty(login) || String.IsNullOrEmpty(password)) //Проверка на пустую строку
+            // Проверка на пустые значения
+            if (String.IsNullOrEmpty(login) || String.IsNullOrEmpty(password))
                 return null;
 
-            var user = await GetUserByLoginAsync(login); //Получение пользователя по логину (если такой есть)
+            // Поиск пользователя в БД
+            var user = await GetUserByLoginAsync(login);
             if (user is null)
                 return null;
 
+            // Верификация пароля
             return VerifyPassword(password, user.PasswordHash) ? user : null; 
-            //Авторизация пользователя, если всё прошло корректно
-            //возвращается объект пользователя, в противном случае null
         }
 
         /// <summary>
         /// Авторизация пользователя с токеном
         /// </summary>
-        /// <param name="request">Логин и Пароль введённый пользователем</param>
-        /// <returns>jwt</returns>
+        /// <param name="request">Логин и Пароль, который ввел пользователь</param>
+        /// <returns>jwt, если успех, иначе null</returns>
         public async Task<string?> AuthUserWithTokenAsync(LoginDto request)
         {
             string login = request.Login;
             string password = request.Password;
 
-            if (String.IsNullOrEmpty(login) || String.IsNullOrEmpty(password)) //Проверка на пустую строку
+            if (String.IsNullOrEmpty(login) || String.IsNullOrEmpty(password))             
                 return null;
 
-            var user = await GetUserByLoginAsync(login); //Получение пользователя по логину (если такой есть)
+            var user = await GetUserByLoginAsync(login); 
             if (user is null)
                 return null;
 
             return VerifyPassword(password, user.PasswordHash) ? await GenerateToken(user) : null;
-            //Авторизация пользователя, если всё прошло корректно
-            //возвращается jwt, в противном случае null
         }
 
         /// <summary>
         /// Генерация jwt
         /// </summary>
         /// <param name="user">Объект пользователя</param>
-        /// <returns>Сгенерированный jwt</returns>
+        /// <returns>jwt токен</returns>
         private async Task<string> GenerateToken(User user)
         {
             int id = user.UserId;
@@ -86,27 +85,27 @@ namespace OnlineShoeShopLibrary.Services
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthOptions.secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var role = await GetUserRoleAsync(login); // Получение роли пользователя
+            var role = await GetUserRoleAsync(login);
 
             var claims = new Claim[]
             {
                 new ("id", id.ToString()),
                 new ("login", login),
                 new ("role", role.Name),
-            }; // берём данные для записи в jwt
+            };
 
             var token = new JwtSecurityToken(
                 signingCredentials: credentials,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtActiveMinutes), //указываем срок, до которого активен ключ
+                expires: DateTime.UtcNow.AddMinutes(_jwtActiveMinutes),
                 issuer: AuthOptions.issuer,
-                audience: AuthOptions.audience); // заполняем данные приложения для генерации токена
+                audience: AuthOptions.audience);
 
-            return new JwtSecurityTokenHandler().WriteToken(token); //Записываем токен
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         /// <summary>
-        /// Получение пользователя по логину
+        /// Находит пользователя по логину
         /// </summary>
         /// <param name="login">Логин</param>
         /// <returns>Объект пользователя</returns>
@@ -122,12 +121,10 @@ namespace OnlineShoeShopLibrary.Services
         public async Task<Role?> GetUserRoleAsync(string login)
         {
             var user = await _context.Users
-                .Include(c => c.Role) //дополнительно загружает Роль
-                .FirstOrDefaultAsync(cu => cu.Login == login); // Ассинхронный метод выборки первого объекта, где совпал логин
+                .Include(c => c.Role)
+                .FirstOrDefaultAsync(cu => cu.Login == login);
 
-            return user is not null ?
-                 user.Role :
-                 null; // если пользователь существует, возвращает роль
+            return user is not null ? user.Role : null;
         }
     }
 }

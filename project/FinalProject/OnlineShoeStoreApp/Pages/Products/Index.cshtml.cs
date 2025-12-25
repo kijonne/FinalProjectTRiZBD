@@ -1,17 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using OnlineShoeStoreLibrary.Contexts;
 using OnlineShoeStoreLibrary.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OnlineShoeStoreApp.Pages.Products
 {
-
     public class IndexModel : PageModel
     {
         private readonly OnlineShoeStoreLibrary.Contexts.OnlineShoeStoreContext _context;
@@ -42,7 +35,7 @@ namespace OnlineShoeStoreApp.Pages.Products
         [BindProperty(SupportsGet = true)]
         public string SortOrder { get; set; } = "article_asc";
 
-        public bool NoResults { get; set; } = false; // Добавили свойство
+        public bool NoResults { get; set; } = false;
 
         public async Task OnGetAsync()
         {
@@ -50,13 +43,12 @@ namespace OnlineShoeStoreApp.Pages.Products
                 .OrderBy(m => m.Name)
                 .ToListAsync();
 
-            // Базовый запрос
             IQueryable<Product> query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Manufacturer)
                 .Include(p => p.Supplier);
 
-            // Поиск по описанию (для MSSQL — Contains с игнором регистра)
+            // Поиск по описанию
             if (!string.IsNullOrWhiteSpace(SearchDescription))
             {
                 var search = SearchDescription.Trim();
@@ -111,7 +103,6 @@ namespace OnlineShoeStoreApp.Pages.Products
                 return RedirectToPage("/Login");
             }
 
-            // Находим товар
             var product = await _context.Products.FindAsync(productId);
             if (product == null || product.Quantity <= 0)
             {
@@ -119,11 +110,9 @@ namespace OnlineShoeStoreApp.Pages.Products
                 return RedirectToPage();
             }
 
-            // Находим пользователя (по логину)
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == User.Identity.Name);
             if (user == null) return Unauthorized();
 
-            // Создаём заказ
             var order = new Order
             {
                 UserId = user.UserId,
@@ -136,12 +125,11 @@ namespace OnlineShoeStoreApp.Pages.Products
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Состав заказа (OrderItems)
             var orderItem = new OrderItem
             {
                 OrderId = order.OrderId,
                 ProductId = productId,
-                Quantity = 1 // можно сделать выбор количества позже
+                Quantity = 1
             };
 
             _context.OrderItems.Add(orderItem);

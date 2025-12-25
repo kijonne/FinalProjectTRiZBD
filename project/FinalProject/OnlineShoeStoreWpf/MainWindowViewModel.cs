@@ -13,7 +13,6 @@ namespace OnlineShoeStoreWpf
         private readonly OnlineShoeStoreContext _context = new();
         public ObservableCollection<Product> Products { get; } = new();
         public ObservableCollection<Manufacturer> Manufacturers { get; } = new();
-        // Простые свойства (коротко)
         public string SearchDescription { get; set; } = "";
         public Manufacturer SelectedManufacturer { get; set; }
         public decimal? MaxPrice { get; set; }
@@ -66,7 +65,7 @@ namespace OnlineShoeStoreWpf
         public void EditProduct(Product selected)
         {
             if (selected == null) return;
-            var window = new EditProductWindow(selected);  // ← Исправлено: selected вместо product
+            var window = new EditProductWindow(selected);
             if (window.ShowDialog() == true)
                 ApplyFilter();
         }

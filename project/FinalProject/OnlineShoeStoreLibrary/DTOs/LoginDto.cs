@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace OnlineShoeStoreLibrary.DTOs
 {
+    /// <summary>
+    /// Класс для передачи логина и пароля при входе
+    /// </summary>
+    /// <param name="login">Имя пользователя</param>
+    /// <param name="password">Пароль</param>
     public class LoginDto(string login, string password)
     {
         [JsonPropertyName("login")]

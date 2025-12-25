@@ -10,7 +10,7 @@ namespace OnlineShoeStoreWpf
     /// </summary>
     public partial class App : Application
     {
-        public static ClaimsPrincipal CurrentUser { get; set; } = new ClaimsPrincipal(new ClaimsIdentity());  // Для ролей
+        public static ClaimsPrincipal CurrentUser { get; set; } = new ClaimsPrincipal(new ClaimsIdentity());
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);

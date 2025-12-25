@@ -5,13 +5,11 @@ using OnlineShoeStoreLibrary.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext
 builder.Services.AddDbContext<OnlineShoeStoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<AuthService>();
 
-// ј”“≈Ќ“»‘» ј÷»я Ч Ё“ќ  Ћё„≈¬ќ… ЅЋќ 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -20,11 +18,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromDays(14);
         options.SlidingExpiration = true;
 
-        // Ёти 4 строки Ч об€зательно дл€ записи куки в .NET 9
-        options.Cookie.Name = "OnlineShoeStore.AuthCookie";  // явное им€ Ч заставл€ет работать
+        options.Cookie.Name = "OnlineShoeStore.AuthCookie";
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;  // Ѕез этого кука может не записатьс€
+        options.Cookie.IsEssential = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
